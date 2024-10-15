@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panier d'achat dynamique</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-image: url('https://via.placeholder.com/1920x1080'); /* Lien vers l'image de fond */
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .product-card {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8); /* Légère transparence */
+        }
+        .product-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .quantity-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .quantity-buttons button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <u><h1>BOUTIQUE EN LIGNE</h1></u>
+        <h5>BIENVENUE DANS NOTRE BOUTIQUE EN LIGNE👌</h5>
+        <p>QUE DÉSIREZ-VOUS ??</p>
+        <div class="row" id="product-list">
+            <!-- Produits seront ajoutés ici -->
+        </div>
+        <h6>TOUJOURS LÀ POUR VOUS RENDRE SERVICE, MERCI🤗🤝</h6>
+        
+        <u><h2>MON PANIER</h2>🛒🛒</u>
+        <table class="table table-bordered" id="cart-table">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Prix Unitaire</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Produits du panier seront ajoutés ici -->
+            </tbody>
+        </table>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h3 class="text-right">Total : <span id="cart-total">0</span>fr</h3>
+            </div>
+            <div class="col-md-6">
+                <button class="btn btn-primary btn-block" id="checkout-button" disabled>Procéder au paiement</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            { id: 1, name: "telephones", price: 60000, image: "https://via.placeholder.com/100" },
+            { id: 2, name: "ordinateurs", price: 100000, image: "https://via.placeholder.com/100" },
+            { id: 3, name: "outils electroniques", price: 5000, image: "https://via.placeholder.com/100" },
+            { id: 4, name: "tablette", price: 25000, image: "https://via.placeholder.com/100" },
+            { id: 5, name: "imprimante", price: 80000, image: "https://via.placeholder.com/100" },
+            { id: 6, name: "cables", price: 1000, image: "https://via.placeholder.com/100" },
+            { id: 7, name: "stylets electroniques", price: 1000, image: "https://via.placeholder.com/100" },
+            { id: 8, name: "routeur", price: 20000, image: "https://via.placeholder.com/100" },
+            { id: 9, name: "scanner", price: 40000, image: "https://via.placeholder.com/100" },
+            { id: 10, name: "ordinateurs(desktop)", price: 50000, image: "https://via.placeholder.com/100" },
+            { id: 11, name: "casque", price: 5000, image: "https://via.placeholder.com/100" },
+            { id: 12, name: "ecouteurs", price: 2500, image: "https://via.placeholder.com/100" },
+            { id: 13, name: "cle USB", price: 3000, image: "https://via.placeholder.com/100" },
+            { id: 14, name: "disque dur externe", price: 5000, image: "https://via.placeholder.com/100" },
+            { id: 15, name: "MODEM", price: 10000, image: "https://via.placeholder.com/100" },
+            { id: 16, name: "Webcam", price: 5000, image: "https://via.placeholder.com/100" },
+            { id: 17, name: "playStation5", price: 600000, image: "https://via.placeholder.com/100" },
+            { id: 18, name: "DRONE", price: 100000, image: "https://via.placeholder.com/100" },
+            { id: 19, name: "clavier", price: 3000, image: "https://via.placeholder.com/100" },
+            { id: 20, name: "souris bluetooth", price: 2000, image: "https://via.placeholder.com/100" },
+        ];
+
+        let cart = {};
+
+        function displayProducts() {
+            const productList = document.getElementById("product-list");
+            productList.innerHTML = "";
+
+            products.forEach(product => {
+                const card = document.createElement("div");
+                card.classList.add("col-md-4", "product-card");
+
+                const img = document.createElement("img");
+                img.classList.add("product-image");
+                img.src = product.image;
+                img.alt = product.name;
+
+                const title = document.createElement("h5");
+                title.textContent = product.name;
+
+                const price = document.createElement("p");
+                price.textContent = product.price + "fr";
+
+                const addToCartButton = document.createElement("button");
+                addToCartButton.classList.add("btn", "btn-primary");
+                addToCartButton.textContent = "Ajouter au panier";
+                addToCartButton.addEventListener("click", () => addToCart(product.id));
+
+                card.appendChild(img);
+                card.appendChild(title);
+                card.appendChild(price);
+                card.appendChild(addToCartButton);
+
+                productList.appendChild(card);
+            });
+        }
+
+        function addToCart(productId) {
+            if (cart[productId]) {
+                cart[productId]++;
+            } else {
+                cart[productId] = 1;
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartTable = document.getElementById("cart-table").getElementsByTagName("tbody")[0];
+            cartTable.innerHTML = "";
+
+            let cartTotal = 0;
+            for (const productId in cart) {
+                const product = products.find(p => p.id === parseInt(productId));
+
+                const row = cartTable.insertRow();
+                const productName = row.insertCell();
+                const quantityCell = row.insertCell();
+                const priceCell = row.insertCell();
+                const totalCell = row.insertCell();
+                const actionCell = row.insertCell();
+
+                productName.textContent = product.name;
+                quantityCell.innerHTML = `
+                    <div class="quantity-buttons">
+                        <button class="btn btn-secondary btn-sm" onclick="decreaseQuantity(${productId})">-</button>
+                        <span>${cart[productId]}</span>
+                        <button class="btn btn-secondary btn-sm" onclick="increaseQuantity(${productId})">+</button>
+                    </div>
+                `;
+                priceCell.textContent = product.price + "fr";
+                totalCell.textContent = (cart[productId] * product.price) + "fr";
+                cartTotal += cart[productId] * product.price;
+
+                const removeButton = document.createElement("button");
+                removeButton.classList.add("btn", "btn-danger");
+                removeButton.textContent = "Supprimer";
+                removeButton.addEventListener("click", () => removeFromCart(productId));
+                actionCell.appendChild(removeButton);
+            }
+
+            document.getElementById("cart-total").textContent = cartTotal.toFixed(2);
+            document.getElementById("checkout-button").disabled = Object.keys(cart).length === 0;
+        }
+
+        function increaseQuantity(productId) {
+            cart[productId]++;
+            updateCart();
+        }
+
+        function decreaseQuantity(productId) {
+            if (cart[productId] > 1) {
+                cart[productId]--;
+            } else {
+                delete cart[productId];
+            }
+            updateCart();
+        }
+
+        function removeFromCart(productId) {
+            delete cart[productId];
+            updateCart();
+        }
+
+        displayProducts();
+    </script>
+</body>
+</html>
